@@ -54,10 +54,10 @@
         '>':[[1,0,0],[0,1,0],[0,0,1],[0,1,0],[1,0,0]], ' ': [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
     };
 
-    const DEFAULTS = { textColor: '#ffffff', bgColor: '#ff8614', newTextColor: '#ffffff', newBgColor: '#ff8614', defaultText: 'RANK' };
+    const DEFAULTS = { textColor: '#ffffff', bgColor: '#7e8490', newTextColor: '#ffffff', newBgColor: '#7e8490', defaultText: 'PLAYER' };
     const charW = 5, charH = 5, spacing = 1;
 
-    let state = { hPad: 2, vPad: 1, bgDir: false, textDir: false, rounded: false, shadow: 3, recentColors: [], pack: [] };
+    let state = { hPad: 2, vPad: 1, bgDir: false, textDir: false, corners: 'square', shadow: 3, recentColors: [], pack: [] };
     const MAX_COLORS = 20, MAX_PACK = 50;
     let canvas, ctx;
 
@@ -70,10 +70,11 @@
         bind();
         $('bgDirectionSelect').value = 'horizontal';
         $('textDirectionSelect').value = 'horizontal';
-        $('roundedCornersSwitch').checked = false;
+        state.corners = 'reinforced';
+        $('cornersSelect').value = 'reinforced';
         $('textShadowSwitch').value = '3';
-        state.hPad = 2; state.vPad = 1;
-        $('hPadding').value = 3; $('vPadding').value = 1;
+        state.hPad = 4; state.vPad = 1;
+        $('hPadding').value = 4; $('vPadding').value = 1;
         resizeCanvas();
         draw();
         seedColors();
@@ -87,7 +88,7 @@
         on('textShadowSwitch', 'change', () => { state.shadow = parseInt($('textShadowSwitch').value); draw(); });
         on('textDirectionSelect', 'change', () => { state.textDir = $('textDirectionSelect').value === 'vertical'; draw(); });
         on('bgDirectionSelect', 'change', () => { state.bgDir = $('bgDirectionSelect').value === 'vertical'; draw(); });
-        on('roundedCornersSwitch', 'change', () => { state.rounded = $('roundedCornersSwitch').checked; draw(); });
+        on('cornersSelect', 'change', () => { state.corners = $('cornersSelect').value; draw(); });
         ['hPadding', 'vPadding'].forEach(id => on(id, 'change', () => { readPad(); resizeCanvas(); draw(); }));
         on('addHPadding', 'click', () => { step('hPadding', 1); });
         on('removeHPadding', 'click', () => { step('hPadding', -1); });
@@ -150,18 +151,50 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         const text = $('textInput').value || DEFAULTS.defaultText;
         const bgC = grab('bg'), txC = grab('text');
-        const bgV = state.bgDir, txV = state.textDir, rnd = state.rounded, shd = state.shadow;
+        const bgV = state.bgDir, txV = state.textDir, shd = state.shadow;
+        const W = canvas.width, H = canvas.height;
 
         if (bgC.length > 1) {
-            const g = ctx.createLinearGradient(0, 0, bgV ? 0 : canvas.width, bgV ? canvas.height : 0);
+            const g = ctx.createLinearGradient(0, 0, bgV ? 0 : W, bgV ? H : 0);
             bgC.forEach((c, i) => g.addColorStop(i / (bgC.length - 1), c));
             ctx.fillStyle = g;
         } else ctx.fillStyle = bgC[0] || DEFAULTS.bgColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, W, H);
 
-        if (rnd) {
-            ctx.clearRect(0, 0, 1, 1); ctx.clearRect(canvas.width - 1, 0, 1, 1);
-            ctx.clearRect(0, canvas.height - 1, 1, 1); ctx.clearRect(canvas.width - 1, canvas.height - 1, 1, 1);
+        if (state.corners === 'rounded') {
+            ctx.clearRect(0, 0, 1, 1); ctx.clearRect(W - 1, 0, 1, 1);
+            ctx.clearRect(0, H - 1, 1, 1); ctx.clearRect(W - 1, H - 1, 1, 1);
+        } else if (state.corners === 'ticket') {
+            const notchD = 5;
+            const nCount = Math.floor((H - 2) / notchD);
+            const off = Math.floor((H - nCount * notchD) / 2);
+            ctx.fillStyle = '#2b2d31';
+            for (let i = 0; i < nCount; i++) {
+                const cy = off + i * notchD + Math.floor(notchD / 2);
+                for (let x = 0; x < 2; x++) {
+                    for (let dy = -2; dy <= 2; dy++) {
+                        const py = cy + dy;
+                        if (py < 0 || py >= H) continue;
+                        const dx = Math.abs(dy) <= 1 ? 2 : (Math.abs(dy) === 2 ? 1 : 0);
+                        for (let dxx = 0; dxx < dx; dxx++) {
+                            if (x === 0) ctx.clearRect(dxx, py, 1, 1);
+                            else ctx.clearRect(W - 1 - dxx, py, 1, 1);
+                        }
+                    }
+                }
+            }
+        } else if (state.corners === 'reinforced') {
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = '#000000';
+            const p = [[1,1,1],[1,1,0],[-1,1,0],[-1,1,0],[-1,1,0],[1,1,0],[1,1,1]];
+            for (let r = 0; r < Math.min(p.length, H); r++) {
+                for (let c = 0; c < p[r].length; c++) {
+                    const v = p[r][c];
+                    if (v === 1) { ctx.fillRect(c, r, 1, 1); ctx.fillRect(W - 1 - c, r, 1, 1); }
+                    else if (v === -1) { ctx.clearRect(c, r, 1, 1); ctx.clearRect(W - 1 - c, r, 1, 1); }
+                }
+            }
+            ctx.globalAlpha = 1;
         }
 
         if (shd > 0) {

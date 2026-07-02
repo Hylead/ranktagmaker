@@ -487,7 +487,7 @@
                 <div class="panel-body">
                     <div class="ctrl-group">
                         <label class="ctrl-label">Content</label>
-                        <input type="text" id="textInput" maxlength="64" value="Rank" placeholder="Enter text" class="ctrl-input">
+                        <input type="text" id="textInput" maxlength="64" value="PLAYER" placeholder="Enter text" class="ctrl-input">
                     </div>
                     <div class="ctrl-group">
                         <label class="ctrl-label">Shadow</label>
@@ -544,9 +544,13 @@
                     </div>
                     <div class="ctrl-group">
                         <div class="row">
-                            <label class="ctrl-label" style="margin:0;flex:1;">Rounded Corners</label>
-                            <input type="checkbox" id="roundedCornersSwitch" class="toggle-input" hidden>
-                            <label for="roundedCornersSwitch" class="toggle-track"><span class="dot"></span></label>
+                            <label class="ctrl-label" style="margin:0;flex:1;">Corners</label>
+                            <select id="cornersSelect" class="ctrl-select" style="width:auto;flex:1;">
+                                <option value="square">Square</option>
+                                <option value="rounded">Rounded</option>
+                                <option value="ticket">Ticket</option>
+                                <option value="reinforced">Reinforced</option>
+                            </select>
                         </div>
                     </div>
                     <div class="ctrl-group">
@@ -573,7 +577,7 @@
             <!-- Color History -->
             <div class="panel">
                 <div class="panel-head">
-                    <i class="fa-regular fa-palette" style="color:#ff8614;font-size:0.8rem;"></i> Recent Colors
+                    <i class="fa-solid fa-palette" style="color:#ff8614;font-size:0.8rem;"></i> Recent Colors
                     <button id="clearColorHistory" style="margin-left:auto;background:none;border:none;color:#505358;cursor:pointer;font-size:0.7rem;font-family:inherit;" class="hover:accent">Clear</button>
                 </div>
                 <div class="panel-body">
@@ -597,7 +601,7 @@
             <!-- Pack -->
             <div class="panel">
                 <div class="panel-head">
-                    <i class="fa-regular fa-box" style="color:#ff8614;font-size:0.8rem;"></i> Tag Pack
+                    <i class="fa-solid fa-box" style="color:#ff8614;font-size:0.8rem;"></i> Tag Pack
                     <span id="packCount" class="badge"></span>
                     <button id="clearPackButton" style="margin-left:auto;background:none;border:none;color:#505358;cursor:pointer;font-size:0.7rem;font-family:inherit;">Clear</button>
                 </div>
