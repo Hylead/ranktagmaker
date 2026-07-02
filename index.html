@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Tag Maker | Hylead Studios</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script src="https://kit.fontawesome.com/a6c455b2a5.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1a1b1e;
+            color: #c8cbd0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-bar {
+            background: #121315;
+            border-bottom: 1px solid #2c2e33;
+            padding: 14px 24px;
+            text-align: center;
+        }
+        .top-bar h2 {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+        }
+
+        .app-wrap {
+            flex: 1;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 24px;
+            width: 100%;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .hero h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        .hero p {
+            color: #6b6f76;
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+        .hero .hint {
+            margin-top: 10px;
+            font-size: 0.78rem;
+            color: #505358;
+        }
+        .hero .hint code {
+            background: #25262a;
+            color: #ff8614;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel {
+            background: #121315;
+            border: 1px solid #2c2e33;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .panel-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: #18191c;
+            border-bottom: 1px solid #2c2e33;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .panel-head .badge {
+            margin-left: auto;
+            font-size: 0.65rem;
+            color: #505358;
+            font-weight: 400;
+        }
+        .panel-body {
+            padding: 14px 16px;
+        }
+
+        .ctrl-group {
+            margin-bottom: 14px;
+        }
+        .ctrl-group:last-child { margin-bottom: 0; }
+        .ctrl-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #6b6f76;
+            margin-bottom: 5px;
+        }
+
+        .ctrl-input {
+            width: 100%;
+            background: #1a1b1e;
+            border: 1px solid #2c2e33;
+            border-radius: 6px;
+            padding: 9px 12px;
+            color: #c8cbd0;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border 0.15s;
+            font-family: inherit;
+        }
+        .ctrl-input:focus { border-color: #ff8614; }
+        .ctrl-input::placeholder { color: #505358; }
+
+        .ctrl-select {
+            width: 100%;
+            background: #1a1b1e;
+            border: 1px solid #2c2e33;
+            border-radius: 6px;
+            padding: 9px 12px;
+            color: #c8cbd0;
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+            transition: border 0.15s;
+            font-family: inherit;
+        }
+        .ctrl-select:focus { border-color: #ff8614; }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .row-grow { flex: 1; }
+
+        .num-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .num-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 5px;
+            background: #1a1b1e;
+            border: 1px solid #2c2e33;
+            color: #6b6f76;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.15s;
+        }
+        .num-btn:hover { border-color: #ff8614; color: #ff8614; }
+        .num-input {
+            width: 44px;
+            text-align: center;
+            background: #1a1b1e;
+            border: 1px solid #2c2e33;
+            border-radius: 5px;
+            padding: 5px 2px;
+            color: #c8cbd0;
+            font-size: 0.82rem;
+            outline: none;
+            font-family: inherit;
+        }
+        .num-input:focus { border-color: #ff8614; }
+        .num-input::-webkit-inner-spin-button,
+        .num-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .num-input { -moz-appearance: textfield; }
+
+        .toggle-track {
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            background: #1a1b1e;
+            border: 1px solid #2c2e33;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: border 0.15s;
+        }
+        .toggle-track .dot {
+            width: 18px;
+            height: 18px;
+            background: #505358;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.2s;
+        }
+        .toggle-input:checked + .toggle-track { border-color: #ff8614; }
+        .toggle-input:checked + .toggle-track .dot {
+            left: 22px;
+            background: #ff8614;
+        }
+
+        .clr-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .clr-picker {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            border: 1px solid #2c2e33;
+            background: #1a1b1e;
+            cursor: pointer;
+            padding: 0;
+        }
+        .clr-hex {
+            width: 72px;
+            text-align: center;
+            background: #1a1b1e;
+            border: 1px solid #2c2e33;
+            border-radius: 5px;
+            padding: 5px 4px;
+            color: #c8cbd0;
+            font-size: 0.78rem;
+            outline: none;
+            font-family: monospace;
+        }
+        .clr-hex:focus { border-color: #ff8614; }
+        .clr-counter {
+            width: 38px;
+            text-align: center;
+            background: #1a1b1e;
+            border: 1px solid #2c2e33;
+            border-radius: 5px;
+            padding: 4px;
+            color: #c8cbd0;
+            font-size: 0.78rem;
+            outline: none;
+        }
+        .clr-counter:focus { border-color: #ff8614; }
+
+        /* Canvas area */
+        .canvas-area {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .canvas-box {
+            background: #121315;
+            border: 1px solid #2c2e33;
+            border-radius: 10px;
+            padding: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 160px;
+            transition: border 0.2s;
+        }
+        .canvas-box:hover { border-color: #3c3f45; }
+        .canvas-box canvas {
+            image-rendering: pixelated;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 18px;
+            border-radius: 7px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: #ff8614;
+            color: #000;
+        }
+        .btn-primary:hover {
+            background: #ff9733;
+            box-shadow: 0 3px 12px rgba(255, 134, 20, 0.25);
+        }
+        .btn-outline {
+            background: transparent;
+            color: #ff8614;
+            border: 1.5px solid #ff8614;
+        }
+        .btn-outline:hover {
+            background: #ff8614;
+            color: #000;
+        }
+        .btn-ghost {
+            background: transparent;
+            color: #6b6f76;
+            border: 1px solid #2c2e33;
+        }
+        .btn-ghost:hover {
+            border-color: #ff8614;
+            color: #ff8614;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid #2c2e33;
+        }
+        .tab {
+            padding: 10px 18px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #6b6f76;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+            background: none;
+            font-family: inherit;
+        }
+        .tab:hover { color: #c8cbd0; }
+        .tab.active {
+            color: #ff8614;
+            border-bottom-color: #ff8614;
+        }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* Pack */
+        .pack-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: #1a1b1e;
+            border-radius: 6px;
+            border: 1px solid #2c2e33;
+            margin-bottom: 6px;
+        }
+        .pack-item img {
+            width: 64px;
+            height: 20px;
+            border-radius: 2px;
+            image-rendering: pixelated;
+            flex-shrink: 0;
+        }
+        .pack-item .name {
+            flex: 1;
+            font-size: 0.82rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .pack-item .del {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            background: transparent;
+            border: none;
+            color: #505358;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        .pack-item .del:hover { color: #ff6b6b; background: #2c2e33; }
+        .pack-empty {
+            color: #505358;
+            font-size: 0.82rem;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        /* Color swatches */
+        .swatch-wall {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .swatch {
+            width: 26px;
+            height: 26px;
+            border-radius: 5px;
+            border: 1.5px solid #2c2e33;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .swatch:hover {
+            border-color: #ff8614;
+            transform: scale(1.12);
+        }
+        .swatch-empty {
+            color: #505358;
+            font-size: 0.8rem;
+            padding: 8px 0;
+        }
+
+        .foot {
+            margin-top: 40px;
+            padding: 20px 24px;
+            background: #121315;
+            border-top: 1px solid #2c2e33;
+            text-align: center;
+        }
+        .foot .social { margin-bottom: 8px; }
+        .foot .social a {
+            color: #505358;
+            font-size: 1.1rem;
+            margin: 0 8px;
+            transition: color 0.15s;
+        }
+        .foot .social a:hover { color: #ff8614; }
+        .foot .copy {
+            font-size: 0.72rem;
+            color: #3c3f45;
+        }
+        .foot .copy a { color: inherit; }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.25s, transform 0.2s;
+        }
+        .fade-in.show { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 800px) {
+            .layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <h2>HYLEAD STUDIOS</h2>
+</div>
+
+<div class="app-wrap fade-in" id="app">
+    <div class="hero">
+        <h1>Custom Tag Maker</h1>
+        <p>Create tags for ranks, tiers, or whatever you like!</p>
+        <div class="hint">Recommended height and ascent: <code>"height": 7</code> <code>"ascent": 7</code></div>
+    </div>
+
+    <div class="layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Text -->
+            <div class="panel">
+                <div class="panel-head"><i class="fa-regular fa-font-case" style="color:#ff8614;font-size:0.8rem;"></i> Text Settings</div>
+                <div class="panel-body">
+                    <div class="ctrl-group">
+                        <label class="ctrl-label">Content</label>
+                        <input type="text" id="textInput" maxlength="64" value="Rank" placeholder="Enter text" class="ctrl-input">
+                    </div>
+                    <div class="ctrl-group">
+                        <label class="ctrl-label">Shadow</label>
+                        <select id="textShadowSwitch" class="ctrl-select">
+                            <option value="0">None</option>
+                            <option value="2">Below</option>
+                            <option value="3" selected>Right</option>
+                        </select>
+                    </div>
+                    <div class="ctrl-group">
+                        <label class="ctrl-label">Gradient Direction</label>
+                        <select id="textDirectionSelect" class="ctrl-select">
+                            <option value="horizontal">Horizontal</option>
+                            <option value="vertical">Vertical</option>
+                        </select>
+                    </div>
+                    <div class="ctrl-group">
+                        <div class="row" style="margin-bottom:6px;">
+                            <span class="ctrl-label" style="margin:0;flex:1;">Colors</span>
+                            <div class="num-group">
+                                <button id="removeTextColor" class="num-btn"><i class="fa-solid fa-minus fa-xs"></i></button>
+                                <input type="number" id="textColorAmount" value="1" class="num-input">
+                                <button id="addTextColor" class="num-btn"><i class="fa-solid fa-plus fa-xs"></i></button>
+                            </div>
+                        </div>
+                        <div id="textColors" class="space-y-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Background -->
+            <div class="panel">
+                <div class="panel-head"><i class="fa-regular fa-rectangle" style="color:#ff8614;font-size:0.8rem;"></i> Background Settings</div>
+                <div class="panel-body">
+                    <div class="ctrl-group">
+                        <div class="row">
+                            <div style="flex:1;">
+                                <label class="ctrl-label">H-Padding</label>
+                                <div class="num-group">
+                                    <button id="removeHPadding" class="num-btn"><i class="fa-solid fa-minus fa-xs"></i></button>
+                                    <input type="number" id="hPadding" value="3" class="num-input">
+                                    <button id="addHPadding" class="num-btn"><i class="fa-solid fa-plus fa-xs"></i></button>
+                                </div>
+                            </div>
+                            <div style="flex:1;">
+                                <label class="ctrl-label">V-Padding</label>
+                                <div class="num-group">
+                                    <button id="removeVPadding" class="num-btn"><i class="fa-solid fa-minus fa-xs"></i></button>
+                                    <input type="number" id="vPadding" value="1" class="num-input">
+                                    <button id="addVPadding" class="num-btn"><i class="fa-solid fa-plus fa-xs"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ctrl-group">
+                        <div class="row">
+                            <label class="ctrl-label" style="margin:0;flex:1;">Rounded Corners</label>
+                            <input type="checkbox" id="roundedCornersSwitch" class="toggle-input" hidden>
+                            <label for="roundedCornersSwitch" class="toggle-track"><span class="dot"></span></label>
+                        </div>
+                    </div>
+                    <div class="ctrl-group">
+                        <label class="ctrl-label">Gradient Direction</label>
+                        <select id="bgDirectionSelect" class="ctrl-select">
+                            <option value="horizontal">Horizontal</option>
+                            <option value="vertical">Vertical</option>
+                        </select>
+                    </div>
+                    <div class="ctrl-group">
+                        <div class="row" style="margin-bottom:6px;">
+                            <span class="ctrl-label" style="margin:0;flex:1;">Colors</span>
+                            <div class="num-group">
+                                <button id="removeBgColor" class="num-btn"><i class="fa-solid fa-minus fa-xs"></i></button>
+                                <input type="number" id="bgColorAmount" value="1" class="num-input">
+                                <button id="addBgColor" class="num-btn"><i class="fa-solid fa-plus fa-xs"></i></button>
+                            </div>
+                        </div>
+                        <div id="bgColors" class="space-y-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Color History -->
+            <div class="panel">
+                <div class="panel-head">
+                    <i class="fa-regular fa-palette" style="color:#ff8614;font-size:0.8rem;"></i> Recent Colors
+                    <button id="clearColorHistory" style="margin-left:auto;background:none;border:none;color:#505358;cursor:pointer;font-size:0.7rem;font-family:inherit;" class="hover:accent">Clear</button>
+                </div>
+                <div class="panel-body">
+                    <div id="colorHistoryContainer" class="swatch-wall"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main -->
+        <div class="canvas-area">
+            <div class="canvas-box">
+                <canvas id="canvas" style="width:340px;height:70px;"></canvas>
+            </div>
+            <div class="actions">
+                <button id="copyCanvasButton" class="btn btn-primary"><i class="fa-regular fa-copy"></i> Copy</button>
+                <button id="saveCanvasButton" class="btn btn-outline"><i class="fa-regular fa-circle-down"></i> Save</button>
+                <button id="addToPackButton" class="btn btn-ghost"><i class="fa-regular fa-rectangle-list"></i> Add to Pack</button>
+                <button id="downloadPackButton" class="btn btn-primary"><i class="fa-regular fa-down-to-bracket"></i> Save ZIP</button>
+            </div>
+
+            <!-- Pack -->
+            <div class="panel">
+                <div class="panel-head">
+                    <i class="fa-regular fa-box" style="color:#ff8614;font-size:0.8rem;"></i> Tag Pack
+                    <span id="packCount" class="badge"></span>
+                    <button id="clearPackButton" style="margin-left:auto;background:none;border:none;color:#505358;cursor:pointer;font-size:0.7rem;font-family:inherit;">Clear</button>
+                </div>
+                <div class="panel-body" id="packContainer" style="max-height:240px;overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="foot">
+    <div class="social">
+        <a href="https://discord.gg/bv7uvmDC6n" target="_blank"><i class="fa-brands fa-discord"></i></a>
+        <a href="https://builtbybit.com/creators/hylead-studios.485597/" target="_blank"><i class="fa-solid fa-store"></i></a>
+    </div>
+    <div class="copy">&copy; 2025 HYLEAD STUDIOS. LICENSED UNDER <a href="https://opensource.org/licenses/MIT" target="_blank">MIT</a>. NOT AFFILIATED WITH MOJANG.</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('app').classList.add('show');
+    });
+</script>
+<script src="assets/tag-tool.js"></script>
+</body>
+</html>

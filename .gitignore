@@ -1,0 +1,16 @@
+# HTTrack cache
+hts-cache/
+hts-log.txt
+cookies.txt
+
+# Archived mirror files (not needed)
+jeqo.net/
+web.archive.org/
+web-static.archive.org/
+www.w3.org/
+backblue.gif
+fade.gif
+
+# OS
+.DS_Store
+Thumbs.db
